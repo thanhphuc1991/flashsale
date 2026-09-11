@@ -1,0 +1,57 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: flashsale-service
+
+  # H2, file-based. AUTO_SERVER=TRUE lets more than one JVM instance point at
+  # the same file concurrently (still demonstrates "multi-instance capable"
+  # without needing a real DB server/Docker). Swap to Postgres by changing
+  # only these 4 lines + adding the postgres driver dependency back.
+  datasource:
+    url: jdbc:h2:file:${DB_FILE_PATH:./data/flashsaledb};AUTO_SERVER=TRUE
+    username: ${DB_USER:sa}
+    password: ${DB_PASSWORD:}
+    driver-class-name: org.h2.Driver
+    hikari:
+      maximum-pool-size: 30
+      minimum-idle: 10
+
+  jpa:
+    hibernate:
+      # No Flyway: schema is generated/kept in sync from the JPA entities
+      # (unique constraints and checks are declared via annotations).
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          batch_size: 50
+
+  # Runs data.sql AFTER Hibernate creates the schema (not before), and the
+  # inserts below are written to be idempotent so re-running on every app
+  # restart doesn't error or duplicate rows.
+  jpa.defer-datasource-initialization: true
+  sql:
+    init:
+      mode: always
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:change-this-super-secret-key-in-prod-min-32-bytes-long}
+    access-token-ttl-minutes: 15
+    refresh-token-ttl-days: 7
+  outbox:
+    poll-interval-ms: 500
+    batch-size: 100
+
+logging:
+  level:
+    com.flashsale: INFO

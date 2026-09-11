@@ -1,0 +1,19 @@
+version: "3.8"
+
+# Optional — only needed to satisfy the assignment's "provide Docker /
+# Docker Compose" deliverable, or to run the service without installing
+# Java/Maven locally. Day-to-day local development does NOT require Docker:
+# `mvn spring-boot:run` is enough, since the DB is an embedded H2 file.
+services:
+  app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      DB_FILE_PATH: /data/flashsaledb
+      JWT_SECRET: change-this-super-secret-key-in-prod-min-32-bytes-long
+    volumes:
+      - flashsale-data:/data
+
+volumes:
+  flashsale-data:
